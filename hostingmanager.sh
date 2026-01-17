@@ -64,3 +64,47 @@ while true; do
 
             echo -e "${CYAN}Running migrations & seeders...${NC}"
             sudo php artisan migrate --seed --force
+
+            echo -e "${CYAN}Creating Nginx config for ${DOMAIN}...${NC}"
+            sudo tee /etc/nginx/sites-available/pterodactyl.conf > /dev/null <<'EOF'
+server {
+    listen 80;
+    server_name '"$DOMAIN"';
+
+    root /var/www/pterodactyl/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+
+            sudo ln -sf /etc/nginx/sites-available/pterodactyl.conf /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+
+            echo -e "${CYAN}Setting permissions...${NC}"
+            sudo chown -R www-data:www-data /var/www/pterodactyl
+
+            echo -e "${GREEN}Pterodactyl Panel installation complete! Exiting...${NC}"
+            exit 0
+            ;;
+        2)
+            echo -e "${CYAN}Starting Tailscale setup...${NC}"
+            curl -fsSL https://tailscale.com/install.sh | sh && tailscale up
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
+            ;;
+        3)
+            echo -e "${CYAN}Installing Cloudflare (cloudflared)...${NC}"
+            sudo mkdir -p --mode=0755 /usr/share/keyrings && \
+            curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/clo
