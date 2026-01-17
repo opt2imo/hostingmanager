@@ -46,9 +46,6 @@ while true; do
             ;;
         5)
             # Make Admin User
-            read -p "Enter admin username: " ADMINUSER
-            read -p "Enter admin email: " ADMINEMAIL
-            read -p "Enter admin password: " ADMINPASS
             echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
             php /var/www/pterodactyl/artisan p:user:make
             echo -e "${GREEN}Admin user created!${NC}"
