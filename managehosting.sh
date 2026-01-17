@@ -37,26 +37,24 @@ while true; do
         4)
             # Cloudflare Install
             echo -e "${CYAN}Installing Cloudflare (cloudflared)...${NC}"
-            sudo mkdir -p --mode=0755 /usr/share/keyrings && \
-            curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null && \
-            echo 'deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list && \
+            sudo mkdir -p --mode=0755 /usr/share/keyrings
+            curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
+            echo 'deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
             sudo apt update && sudo apt install cloudflared -y
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
             ;;
         5)
-    {
-        read -p "Enter admin username: " ADMINUSER
-        read -p "Enter admin email: " ADMINEMAIL
-        read -p "Enter admin password: " ADMINPASS
-        echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
-        php /var/www/pterodactyl/artisan p:user:make --username="$ADMINUSER" --email="$ADMINEMAIL" --password="$ADMINPASS" --admin
-        echo -e "${GREEN}Admin user created!${NC}"
-        echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-        read
-    }
-    ;;
-
+            # Make Admin User
+            read -p "Enter admin username: " ADMINUSER
+            read -p "Enter admin email: " ADMINEMAIL
+            read -p "Enter admin password: " ADMINPASS
+            echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
+            php /var/www/pterodactyl/artisan p:user:make --username="$ADMINUSER" --email="$ADMINEMAIL" --password="$ADMINPASS" --admin
+            echo -e "${GREEN}Admin user created!${NC}"
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
+            ;;
         0)
             echo -e "${YELLOW}Exiting... Goodbye!${NC}"
             exit 0
