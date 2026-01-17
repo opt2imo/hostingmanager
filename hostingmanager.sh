@@ -28,7 +28,8 @@ while true; do
             echo -e "${CYAN}Starting Tailscale setup...${NC}"
             curl -fsSL https://tailscale.com/install.sh | sh && tailscale up
             echo ""
-            read -p "Press Enter to return to main menu..."
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
             ;;
         3)
             echo ""
@@ -39,7 +40,8 @@ while true; do
             sudo apt-get update && \
             sudo apt-get install cloudflared -y
             echo ""
-            read -p "Press Enter to return to main menu..."
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
             ;;
         0)
             echo ""
