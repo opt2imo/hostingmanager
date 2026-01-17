@@ -47,7 +47,7 @@ while true; do
         5)
             # Make Admin User
             echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
-            php artisan p:user:make
+            cd /var/www/pterodactyl && php artisan p:user:make
             echo -e "${GREEN}Admin user created!${NC}"
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
