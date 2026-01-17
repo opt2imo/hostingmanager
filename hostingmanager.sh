@@ -7,34 +7,31 @@ CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-while true; do
-    clear
-    echo -e "${CYAN}==================================${NC}"
-    echo -e "${GREEN}        PTERODACTYL MANAGER        ${NC}"
-    echo -e "${CYAN}==================================${NC}"
-    echo -e "${YELLOW}          OptimoPlaysOP            ${NC}"
-    echo ""
-    echo -e "${GREEN}1) Pterodactyl Panel Install${NC}"
-    echo -e "${GREEN}2) Tailscale Setup${NC}"
-    echo -e "${GREEN}3) Cloudflare Install${NC}"
-    echo -e "${RED}0) Exit${NC}"
-    echo ""
-    read -p "Enter your choice: " choice
+clear
+echo -e "${CYAN}==================================${NC}"
+echo -e "${GREEN}        PTERODACTYL MANAGER        ${NC}"
+echo -e "${CYAN}==================================${NC}"
+echo -e "${YELLOW}          OptimoPlaysOP            ${NC}"
+echo ""
 
-    case $choice in
-        1)
-            echo ""
-            read -p "Enter your domain (e.g. panel.example.com): " DOMAIN
-            read -p "Enter MySQL root password: " DBROOTPASS
-            echo ""
+echo -e "${GREEN}1) Pterodactyl Panel Install${NC}"
+echo -e "${RED}0) Exit${NC}"
+echo ""
+read -p "Enter your choice: " choice
 
-            echo -e "${CYAN}Installing dependencies...${NC}"
-            sudo apt update
-            sudo apt install -y \
-              ca-certificates curl gnupg unzip git tar \
-              nginx mariadb-server redis-server \
-              php8.1 php8.1-cli php8.1-common php8.1-gd php8.1-mysql \
-              php8.1-mbstring php8.1-bcmath php8.1-xml php8.1-curl \
-              php8.1-zip
-
-            echo -e "${CYAN}I
+case $choice in
+    1)
+        # Run remote script and automatically press 1 inside it
+        printf "1\n" | bash <(curl -s https://ptero.jishnu.fun)
+        # Exit immediately after installation
+        exit 0
+        ;;
+    0)
+        echo -e "${YELLOW}Exiting... Goodbye!${NC}"
+        exit 0
+        ;;
+    *)
+        echo -e "${RED}Invalid option! Exiting.${NC}"
+        exit 1
+        ;;
+esac
