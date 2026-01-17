@@ -32,7 +32,7 @@ while true; do
             echo ""
 
             # Run installer
-            bash <(curl -fsSL https://pterodactyl-installer.se/install.sh)
+            bash <(curl -fsSL https://pterodactyl-installer.se/install.sh) -0
 
             echo ""
             echo -e "${GREEN}Panel installation finished.${NC}"
