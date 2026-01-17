@@ -15,6 +15,7 @@ while true; do
     echo -e "${YELLOW}          OptimoPlaysOP            ${NC}"
     echo ""
     echo -e "${GREEN}1) Pterodactyl Panel Install${NC}"
+    echo -e "${GREEN}2) Wings Install${NC}"
     echo -e "${GREEN}3) Tailscale Setup${NC}"
     echo -e "${GREEN}4) Cloudflare Install${NC}"
     echo -e "${GREEN}5) Make Admin User${NC}"
@@ -26,6 +27,22 @@ while true; do
         1)
             # Pterodactyl Panel Install (remote script)
             bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/hostingmanager.sh)
+            ;;
+        2)
+            # Wings Install
+            echo -e "${CYAN}Generating temporary SSL certificate...${NC}"
+            openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
+                -subj "/C=NA/ST=NA/L=NA/O=NA/CN=Generic SSL Certificate" \
+                -keyout privkey.pem -out fullchain.pem
+            cd || exit
+
+            echo -e "${CYAN}Installing Wings (official)...${NC}"
+            # Official Wings installation commands:
+            curl -Lo /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64
+            chmod +x /usr/local/bin/wings
+            sudo wings install
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
             ;;
         3)
             # Tailscale Setup
@@ -46,8 +63,11 @@ while true; do
             ;;
         5)
             # Make Admin User
+            read -p "Enter admin username: " ADMINUSER
+            read -p "Enter admin email: " ADMINEMAIL
+            read -p "Enter admin password: " ADMINPASS
             echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
-            cd /var/www/pterodactyl && php /var/www/pterodactyl/artisan p:user:make 
+            cd /var/www/pterodactyl && php /var/www/pterodactyl/artisan p:user:make
             echo -e "${GREEN}Admin user created!${NC}"
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
