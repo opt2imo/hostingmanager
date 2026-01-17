@@ -29,9 +29,20 @@ while true; do
             bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/hostingmanager.sh)
             ;;
         2)
-            # Wings Install
-            echo -e "${CYAN}Starting Wings installation...${NC}"
-    printf "2\n" | bash <(curl -fsSL https://ptero.jishnu.fun)
+            echo -e "${CYAN}Installing Docker & Wings...${NC}"
+    curl -sSL https://get.docker.com/ | CHANNEL=stable bash && \
+    sudo systemctl enable --now docker && \
+    sudo mkdir -p /etc/pterodactyl && \
+    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_$(
+        [ "$(uname -m)" = "x86_64" ] && echo amd64 || echo arm64
+    )" && \
+    sudo chmod +x /usr/local/bin/wings && \
+    cd /etc/systemd/system && \
+    wget -O wings.service https://github.com/opt2imo/hostingmanager/releases/download/12/wings.service && \
+    cd ~
+
+    echo -e "${GREEN}Wings installed successfully.${NC}"
+    echo -e "${YELLOW}Configure Wings manually from the panel.${NC}"
     echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
     read
     ;;
