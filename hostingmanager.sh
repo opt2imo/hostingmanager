@@ -16,6 +16,7 @@ while true; do
     echo -e "${CYAN}==================================${NC}"
     echo -e "${YELLOW}          OptimoPlaysOP            ${NC}"
     echo ""
+    echo -e "${GREEN}1) Pterodactyl Panel Install${NC}"
     echo -e "${GREEN}2) Tailscale Setup${NC}"
     echo -e "${GREEN}3) Cloudflare Install${NC}"
     echo -e "${RED}0) Exit${NC}"
@@ -23,6 +24,29 @@ while true; do
     read -p "Enter your choice: " choice
 
     case $choice in
+        1)
+            echo ""
+            read -p "Enter domain for Pterodactyl panel (example: panel.example.com): " DOMAIN
+            echo ""
+            echo -e "${CYAN}Starting Pterodactyl installation for domain: ${YELLOW}$DOMAIN${NC}"
+            echo ""
+
+            # Run installer
+            bash <(curl -fsSL https://pterodactyl-installer.se/install.sh)
+
+            echo ""
+            echo -e "${GREEN}Panel installation finished.${NC}"
+            echo ""
+
+            # Create panel user
+            echo -e "${CYAN}Creating Pterodactyl panel user...${NC}"
+            cd /var/www/pterodactyl || exit
+            php artisan p:user:make
+
+            echo ""
+            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+            read
+            ;;
         2)
             echo ""
             echo -e "${CYAN}Starting Tailscale setup...${NC}"
