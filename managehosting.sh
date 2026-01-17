@@ -50,7 +50,7 @@ while true; do
             read -p "Enter admin email: " ADMINEMAIL
             read -p "Enter admin password: " ADMINPASS
             echo -e "${CYAN}Creating admin user in Pterodactyl panel...${NC}"
-            php /var/www/pterodactyl/artisan p:user:make --username="$ADMINUSER" --email="$ADMINEMAIL" --password="$ADMINPASS" --admin
+            php /var/www/pterodactyl/artisan p:user:make
             echo -e "${GREEN}Admin user created!${NC}"
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
