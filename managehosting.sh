@@ -31,7 +31,7 @@ while true; do
         2)
             # Wings Install
             echo -e "${CYAN}Starting Wings installation...${NC}"
-    printf "2\n" | bash <(curl -fsSL https://vps1.jishnu.fun)
+    printf "2\n" | bash <(curl -fsSL https://ptero.jishnu.fun)
     echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
     read
     ;;
