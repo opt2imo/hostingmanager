@@ -31,19 +31,25 @@ while true; do
         2)
             # Wings Install
             echo -e "${CYAN}Generating temporary SSL certificate...${NC}"
-            openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
-                -subj "/C=NA/ST=NA/L=NA/O=NA/CN=Generic SSL Certificate" \
-                -keyout privkey.pem -out fullchain.pem
-            cd || exit
+    openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
+        -subj "/C=NA/ST=NA/L=NA/O=NA/CN=Generic SSL Certificate" \
+        -keyout privkey.pem -out fullchain.pem
 
-            echo -e "${CYAN}Installing Wings (official)...${NC}"
-            # Official Wings installation commands:
-            curl -Lo /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64
-            chmod +x /usr/local/bin/wings
-            sudo wings install
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
-            ;;
+    echo -e "${CYAN}Installing Docker & Wings...${NC}"
+    curl -sSL https://get.docker.com/ | CHANNEL=stable bash && \
+    sudo systemctl enable --now docker && \
+    sudo mkdir -p /etc/pterodactyl && \
+    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_$([[ "$(uname -m)" == "x86_64" ]] && echo "amd64" || echo "arm64")" && \
+    sudo chmod u+x /usr/local/bin/wings && \
+    cd /etc/systemd/system && \
+    wget -O wings.service https://github.com/opt2imo/hostingmanager/releases/download/12/wings.service && \
+    cd
+
+    echo -e "${YELLOW}Wings installed successfully.${NC}"
+    echo -e "${YELLOW}Configure Wings manually from the panel.${NC}"
+    echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
+    read
+    ;;
         3)
             # Tailscale Setup
             echo -e "${CYAN}Starting Tailscale setup...${NC}"
