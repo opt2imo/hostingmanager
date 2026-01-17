@@ -5,12 +5,10 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 while true; do
     clear
-
-    # Header
     echo -e "${CYAN}==================================${NC}"
     echo -e "${GREEN}        PTERODACTYL MANAGER        ${NC}"
     echo -e "${CYAN}==================================${NC}"
@@ -26,54 +24,103 @@ while true; do
     case $choice in
         1)
             echo ""
-            read -p "Enter domain for Pterodactyl panel (example: panel.example.com): " DOMAIN
-            echo ""
-            echo -e "${CYAN}Starting Pterodactyl installation for domain: ${YELLOW}$DOMAIN${NC}"
+            read -p "Enter domain for panel (example: panel.example.com): " DOMAIN
             echo ""
 
-            # Run installer
-            bash <(curl -fsSL https://pterodactyl-installer.se/install.sh) -0
+            echo -e "${CYAN}Installing dependencies...${NC}"
+            sudo apt update
+            sudo apt install -y \
+              ca-certificates curl gnupg unzip git tar \
+              nginx mariadb-server redis-server \
+              php8.1 php8.1-cli php8.1-common php8.1-gd php8.1-mysql \
+              php8.1-mbstring php8.1-bcmath php8.1-xml php8.1-curl \
+              php8.1-zip
 
-            echo ""
-            echo -e "${GREEN}Panel installation finished.${NC}"
-            echo ""
+            echo -e "${CYAN}Installing Composer...${NC}"
+            curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 
-            # Create panel user
-            echo -e "${CYAN}Creating Pterodactyl panel user...${NC}"
+            echo -e "${CYAN}Downloading Pterodactyl panel...${NC}"
+            sudo mkdir -p /var/www/pterodactyl
             cd /var/www/pterodactyl || exit
-            php artisan p:user:make
+            sudo curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
+            sudo tar -xzvf panel.tar.gz
+            sudo chmod -R 755 storage/* bootstrap/cache/
+
+            echo -e "${CYAN}Installing PHP dependencies...${NC}"
+            sudo composer install --no-dev --optimize-autoloader
+
+            echo -e "${CYAN}Setting up environment...${NC}"
+            sudo cp .env.example .env
+            sudo php artisan key:generate --force
+
+            echo -e "${CYAN}Database & mail setup (follow prompts)...${NC}"
+            sudo php artisan p:environment:setup
+            sudo php artisan p:environment:database
+
+            echo -e "${CYAN}Running migrations & seeders...${NC}"
+            sudo php artisan migrate --seed --force
+
+            echo -e "${CYAN}Creating Nginx config for ${DOMAIN}...${NC}"
+            sudo tee /etc/nginx/sites-available/pterodactyl.conf > /dev/null <<EOF
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    root /var/www/pterodactyl/public;
+    index index.php;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.1-fpm.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+
+            sudo ln -sf /etc/nginx/sites-available/pterodactyl.conf /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+
+            echo -e "${CYAN}Setting permissions...${NC}"
+            sudo chown -R www-data:www-data /var/www/pterodactyl
+
+            echo -e "${GREEN}Panel installed successfully!${NC}"
+            echo ""
+
+            echo -e "${CYAN}Create your panel user now:${NC}"
+            cd /var/www/pterodactyl || exit
+            sudo php artisan p:user:make
 
             echo ""
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
             ;;
         2)
-            echo ""
             echo -e "${CYAN}Starting Tailscale setup...${NC}"
             curl -fsSL https://tailscale.com/install.sh | sh && tailscale up
-            echo ""
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
             ;;
         3)
-            echo ""
             echo -e "${CYAN}Installing Cloudflare (cloudflared)...${NC}"
             sudo mkdir -p --mode=0755 /usr/share/keyrings && \
             curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null && \
             echo 'deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list && \
-            sudo apt-get update && \
-            sudo apt-get install cloudflared -y
-            echo ""
+            sudo apt update && sudo apt install cloudflared -y
             echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
             read
             ;;
         0)
-            echo ""
             echo -e "${YELLOW}Exiting... Goodbye!${NC}"
             exit 0
             ;;
         *)
-            echo ""
             echo -e "${RED}Invalid option!${NC}"
             sleep 1.5
             ;;
