@@ -30,19 +30,41 @@ while true; do
             ;;
         2)
             echo -e "${CYAN}Installing Docker & Wings...${NC}"
-    curl -sSL https://get.docker.com/ | CHANNEL=stable bash && \
+    sudo apt update && sudo apt upgrade -y && \
+    sudo apt install -y curl tar unzip && \
+    curl -fsSL https://get.docker.com | sh && \
     sudo systemctl enable --now docker && \
     sudo mkdir -p /etc/pterodactyl && \
-    curl -L -o /usr/local/bin/wings "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_$(
-        [ "$(uname -m)" = "x86_64" ] && echo amd64 || echo arm64
-    )" && \
-    sudo chmod +x /usr/local/bin/wings && \
-    cd /etc/systemd/system && \
-    wget -O wings.service https://github.com/opt2imo/hostingmanager/releases/download/12/wings.service && \
-    cd ~
+    cd /etc/pterodactyl && \
+    curl -L -o wings https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64 && \
+    chmod +x wings
+
+    echo -e "${CYAN}Creating wings.service...${NC}"
+    sudo tee /etc/systemd/system/wings.service > /dev/null << 'EOF'
+[Unit]
+Description=Pterodactyl Wings Daemon
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=root
+WorkingDirectory=/etc/pterodactyl
+LimitNOFILE=4096
+PIDFile=/var/run/wings/daemon.pid
+ExecStart=/etc/pterodactyl/wings
+Restart=on-failure
+StartLimitInterval=180
+StartLimitBurst=30
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable wings
 
     echo -e "${GREEN}Wings installed successfully.${NC}"
-    echo -e "${YELLOW}Configure Wings manually from the panel.${NC}"
+    echo -e "${YELLOW}Paste your Wings configuration from the panel to start it.${NC}"
     echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
     read
     ;;
