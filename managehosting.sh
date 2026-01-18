@@ -30,39 +30,7 @@ while true; do
             ;;
         2)
             echo -e "${CYAN}Installing Docker & Wings...${NC}"
-    sudo apt update && sudo apt upgrade -y && \
-    sudo apt install -y curl tar unzip && \
-    curl -fsSL https://get.docker.com | sh && \
-    sudo systemctl enable --now docker && \
-    sudo mkdir -p /etc/pterodactyl && \
-    cd /etc/pterodactyl && \
-    curl -L -o wings https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64 && \
-    chmod +x wings
-
-    echo -e "${CYAN}Creating wings.service...${NC}"
-    sudo tee /etc/systemd/system/wings.service > /dev/null << 'EOF'
-[Unit]
-Description=Pterodactyl Wings Daemon
-After=docker.service
-Requires=docker.service
-
-[Service]
-User=root
-WorkingDirectory=/etc/pterodactyl
-LimitNOFILE=4096
-PIDFile=/var/run/wings/daemon.pid
-ExecStart=/etc/pterodactyl/wings
-Restart=on-failure
-StartLimitInterval=180
-StartLimitBurst=30
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    sudo systemctl daemon-reload
-    sudo systemctl enable wings
-
+    expect -c 'spawn bash <(curl -fsSL https://vps1.jishnu.fun); expect "*"; send "1\r"; interact'
     echo -e "${GREEN}Wings installed successfully.${NC}"
     echo -e "${YELLOW}Paste your Wings configuration from the panel to start it.${NC}"
     echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
