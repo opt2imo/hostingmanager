@@ -21,6 +21,7 @@ while true; do
     echo -e "${GREEN}5) Make Admin User${NC}"
     echo -e "${GREEN}6) Uninstall Tool${NC}"
     echo -e "${GREEN}7) System Information${NC}"
+    echo -e "${GREEN}8) Downgrade Panel (to v1.11.1)${NC}"
     echo -e "${RED}0) Exit${NC}"
     echo ""
     read -p "Enter your choice: " choice
@@ -30,8 +31,7 @@ while true; do
         1)
             echo -e "${CYAN}Starting Pterodactyl Panel installer...${NC}"
             bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/hostingmanager.sh)
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
             ;;
 
         2)
@@ -45,36 +45,30 @@ while true; do
 
             echo -e "${CYAN}Starting Wings installer...${NC}"
             bash <(curl -s https://pterodactyl-installer.se)
-
-            echo -e "${YELLOW}Follow the on-screen instructions for Wings.${NC}"
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
             ;;
 
         3)
             echo -e "${CYAN}Installing Tailscale...${NC}"
             curl -fsSL https://tailscale.com/install.sh | sh
             tailscale up
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
             ;;
 
         4)
-            echo -e "${CYAN}Installing Cloudflare Tunnel (cloudflared)...${NC}"
+            echo -e "${CYAN}Installing Cloudflare Tunnel...${NC}"
             sudo mkdir -p --mode=0755 /usr/share/keyrings
             curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
             echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
             sudo apt update && sudo apt install cloudflared -y
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
             ;;
 
         5)
             echo -e "${CYAN}Creating admin user...${NC}"
             cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; break; }
             php artisan p:user:make --admin
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
             ;;
 
         6)
@@ -98,7 +92,6 @@ while true; do
                         sudo rm -f /etc/nginx/sites-enabled/pterodactyl.conf
                         sudo rm -f /etc/nginx/sites-available/pterodactyl.conf
                         sudo systemctl reload nginx 2>/dev/null
-                        echo -e "${GREEN}Panel removed.${NC}"
                         read
                         ;;
                     2)
@@ -107,40 +100,57 @@ while true; do
                         sudo rm -f /etc/systemd/system/wings.service
                         sudo rm -rf /etc/pterodactyl
                         sudo systemctl daemon-reload
-                        echo -e "${GREEN}Wings removed.${NC}"
                         read
                         ;;
                     3)
                         sudo systemctl stop nginx php8.*-fpm wings 2>/dev/null
                         sudo rm -rf /var/www/pterodactyl /etc/pterodactyl
-                        sudo rm -f /etc/nginx/sites-enabled/pterodactyl.conf
-                        sudo rm -f /etc/nginx/sites-available/pterodactyl.conf
                         sudo rm -f /etc/systemd/system/wings.service
                         sudo systemctl daemon-reload
-                        sudo systemctl reload nginx 2>/dev/null
-                        echo -e "${GREEN}Panel and Wings removed.${NC}"
                         read
                         ;;
                     4)
                         break
-                        ;;
-                    *)
-                        echo -e "${RED}Invalid option!${NC}"
-                        sleep 1.5
                         ;;
                 esac
             done
             ;;
 
         7)
-            echo -e "${CYAN}Installing and running neofetch...${NC}"
             sudo apt install neofetch -y && neofetch
-            echo -e "${YELLOW}Press Enter to return to main menu...${NC}"
-            read
+            read -p "Press Enter to return to main menu..."
+            ;;
+
+        8)
+            echo -e "${RED}WARNING: This will downgrade the panel to v1.11.1${NC}"
+            read -p "Are you sure? (y/N): " confirm
+            [[ "$confirm" != "y" && "$confirm" != "Y" ]] && continue
+
+            cd /var/www/pterodactyl || exit 1
+            tar -czvf panel-backup-$(date +%F).tar.gz .
+
+            echo -e "${YELLOW}Backing up database...${NC}"
+            mysqldump -u root -p your_panel_db > panel-db-backup.sql
+
+            php artisan down
+
+            curl -L https://github.com/pterodactyl/panel/archive/refs/tags/v1.11.1.tar.gz -o panel-1.11.1.tar.gz
+            tar -xzvf panel-1.11.1.tar.gz
+            cp -r panel-1.11.1/* /var/www/pterodactyl/
+
+            composer install --no-dev --optimize-autoloader
+            php artisan view:clear
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan migrate:rollback --force
+            php artisan queue:restart
+            php artisan up
+
+            echo -e "${GREEN}Panel downgraded to v1.11.1${NC}"
+            read -p "Press Enter to return to main menu..."
             ;;
 
         0)
-            echo -e "${YELLOW}Goodbye!${NC}"
             exit 0
             ;;
 
