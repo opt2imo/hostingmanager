@@ -22,6 +22,7 @@ while true; do
     echo -e "${GREEN}6) Uninstall Tool${NC}"
     echo -e "${GREEN}7) System Information${NC}"
     echo -e "${GREEN}8) Blueprint Installer${NC}"
+    echo -e "${GREEN}9) Blueprint Extensions${NC}"
     echo -e "${RED}0) Exit${NC}"
     echo ""
     read -p "Enter your choice: " choice
@@ -35,14 +36,6 @@ while true; do
             ;;
 
         2)
-            echo -e "${CYAN}Creating certificates for Wings...${NC}"
-            sudo mkdir -p /etc/certs
-            cd /etc/certs || exit 1
-            sudo openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
-                -subj "/C=NA/ST=NA/L=NA/O=NA/CN=Generic SSL Certificate" \
-                -keyout privkey.pem -out fullchain.pem
-            cd ~
-
             echo -e "${CYAN}Installing Wings...${NC}"
             bash <(curl -s https://pterodactyl-installer.se)
             read -p "Press Enter to return to main menu..."
@@ -66,7 +59,7 @@ while true; do
 
         5)
             echo -e "${CYAN}Creating admin user...${NC}"
-            cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; break; }
+            cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; continue; }
             php artisan p:user:make --admin
             read -p "Press Enter to return to main menu..."
             ;;
@@ -89,25 +82,23 @@ while true; do
                     1)
                         sudo systemctl stop nginx php8.*-fpm 2>/dev/null
                         sudo rm -rf /var/www/pterodactyl
-                        sudo rm -f /etc/nginx/sites-enabled/pterodactyl.conf
-                        sudo rm -f /etc/nginx/sites-available/pterodactyl.conf
                         sudo systemctl reload nginx 2>/dev/null
-                        read
+                        read -p "Panel removed. Press Enter..."
                         ;;
                     2)
                         sudo systemctl stop wings 2>/dev/null
                         sudo systemctl disable wings 2>/dev/null
-                        sudo rm -f /etc/systemd/system/wings.service
                         sudo rm -rf /etc/pterodactyl
+                        sudo rm -f /etc/systemd/system/wings.service
                         sudo systemctl daemon-reload
-                        read
+                        read -p "Wings removed. Press Enter..."
                         ;;
                     3)
                         sudo systemctl stop nginx php8.*-fpm wings 2>/dev/null
                         sudo rm -rf /var/www/pterodactyl /etc/pterodactyl
                         sudo rm -f /etc/systemd/system/wings.service
                         sudo systemctl daemon-reload
-                        read
+                        read -p "Panel + Wings removed. Press Enter..."
                         ;;
                     4)
                         break
@@ -123,10 +114,37 @@ while true; do
 
         8)
             echo -e "${CYAN}Running Blueprint Installer...${NC}"
-            cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; break; }
+            cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; continue; }
             bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/blueprint-installer.sh)
             cd ~
             read -p "Press Enter to return to main menu..."
+            ;;
+
+        9)
+            while true; do
+                clear
+                echo -e "${CYAN}==================================${NC}"
+                echo -e "${GREEN}     BLUEPRINT EXTENSIONS          ${NC}"
+                echo -e "${CYAN}==================================${NC}"
+                echo ""
+                echo -e "${GREEN}1) Install MC Plugins Blueprint${NC}"
+                echo -e "${RED}0) Exit to Main Menu${NC}"
+                echo ""
+                read -p "Enter your choice: " bchoice
+
+                case $bchoice in
+                    1)
+                        cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; continue; }
+                        wget https://github.com/OptimoPEOP/blueprint-extentions/releases/download/ok/mcplugins.blueprint
+                        blueprint -install mcplugins.blueprint
+                        cd ~
+                        read -p "Installation complete. Press Enter..."
+                        ;;
+                    0)
+                        break
+                        ;;
+                esac
+            done
             ;;
 
         0)
