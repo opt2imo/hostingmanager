@@ -135,7 +135,7 @@ while true; do
                 case $bchoice in
                     1)
                         cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; continue; }
-                        wget https://github.com/OptimoPEOP/blueprint-extentions/releases/download/ok/mcplugins.blueprint
+                        wget -O mcplugins.blueprint https://github.com/OptimoPEOP/blueprint-extentions/releases/download/ok/mcplugins.blueprint
                         blueprint -install mcplugins.blueprint
                         cd ~
                         read -p "Installation complete. Press Enter..."
