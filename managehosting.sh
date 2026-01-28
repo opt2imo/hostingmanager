@@ -21,7 +21,7 @@ while true; do
     echo -e "${GREEN}5) Make Admin User${NC}"
     echo -e "${GREEN}6) Uninstall Tool${NC}"
     echo -e "${GREEN}7) System Information${NC}"
-    echo -e "${GREEN}8) Downgrade Panel (to v1.11.1)${NC}"
+    echo -e "${GREEN}8) Blueprint Installer${NC}"
     echo -e "${RED}0) Exit${NC}"
     echo ""
     read -p "Enter your choice: " choice
@@ -43,7 +43,7 @@ while true; do
                 -keyout privkey.pem -out fullchain.pem
             cd ~
 
-            echo -e "${CYAN}Starting Wings installer...${NC}"
+            echo -e "${CYAN}Installing Wings...${NC}"
             bash <(curl -s https://pterodactyl-installer.se)
             read -p "Press Enter to return to main menu..."
             ;;
@@ -122,31 +122,10 @@ while true; do
             ;;
 
         8)
-            echo -e "${RED}WARNING: This will downgrade the panel to v1.11.1${NC}"
-            read -p "Are you sure? (y/N): " confirm
-            [[ "$confirm" != "y" && "$confirm" != "Y" ]] && continue
-
-            cd /var/www/pterodactyl || exit 1
-            tar -czvf panel-backup-$(date +%F).tar.gz .
-
-            echo -e "${YELLOW}Backing up database...${NC}"
-            mysqldump -u root -p your_panel_db > panel-db-backup.sql
-
-            php artisan down
-
-            curl -L https://github.com/pterodactyl/panel/archive/refs/tags/v1.11.1.tar.gz -o panel-1.11.1.tar.gz
-            tar -xzvf panel-1.11.1.tar.gz
-            cp -r panel-1.11.1/* /var/www/pterodactyl/
-
-            composer install --no-dev --optimize-autoloader
-            php artisan view:clear
-            php artisan config:clear
-            php artisan cache:clear
-            php artisan migrate:rollback --force
-            php artisan queue:restart
-            php artisan up
-
-            echo -e "${GREEN}Panel downgraded to v1.11.1${NC}"
+            echo -e "${CYAN}Running Blueprint Installer...${NC}"
+            cd /var/www/pterodactyl || { echo -e "${RED}Panel not found!${NC}"; sleep 2; break; }
+            bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/blueprint-installer.sh)
+            cd ~
             read -p "Press Enter to return to main menu..."
             ;;
 
