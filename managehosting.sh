@@ -23,6 +23,7 @@ while true; do
     echo -e "${GREEN}7) System Information${NC}"
     echo -e "${GREEN}8) Blueprint Installer${NC}"
     echo -e "${GREEN}9) Blueprint Extensions${NC}"
+    echo -e "${GREEN}10) Blueprint Themes${NC}"
     echo -e "${RED}0) Exit${NC}"
     echo ""
     read -p "Enter your choice: " choice
@@ -188,6 +189,74 @@ EOF
                 esac
             done
             ;;
+
+10)
+    while true; do
+        clear
+        echo -e "${CYAN}==================================${NC}"
+        echo -e "${GREEN}        BLUEPRINT THEMES           ${NC}"
+        echo -e "${CYAN}==================================${NC}"
+        echo ""
+        echo -e "${GREEN}1) Nebula Theme${NC}"
+        echo -e "${GREEN}2) Euphoria Theme${NC}"
+        echo -e "${GREEN}3) Nook Theme${NC}"
+        echo -e "${RED}0) Exit to Main Menu${NC}"
+        echo ""
+        read -p "Enter your choice: " tchoice
+
+        case $tchoice in
+            1)
+                echo -e "${CYAN}Installing Nebula Theme...${NC}"
+                cd || exit
+                git clone https://github.com/username5642/nebula.git
+                cd nebula || exit
+                bash install.gg
+                blueprint -install nebula
+                cd
+                read -p "Nebula installed. Press Enter..."
+                ;;
+            2)
+                echo -e "${CYAN}Installing Euphoria Theme...${NC}"
+                cd /var/www/pterodactyl || { echo "Panel not found"; sleep 2; continue; }
+                wget -O euphoriatheme.blueprint "https://cdn.discordapp.com/attachments/1376132032689606676/1466408735772770444/euphoriatheme.blueprint?ex=697ca30f&is=697b518f&hm=31151cef7178d831bcdefbd657132dec7d91d7f8ef07aa9838f90b32ee390135"
+                blueprint -install euphoriatheme.blueprint
+                cd
+                read -p "Euphoria installed. Press Enter..."
+                ;;
+            3)
+                echo -e "${CYAN}Installing Nook Theme...${NC}"
+                sudo apt update
+                sudo apt install -y software-properties-common
+                sudo add-apt-repository ppa:ondrej/php -y
+                sudo apt update
+                sudo apt install -y php8.3
+                php -v
+
+                cd /var/www/pterodactyl || { echo "Panel not found"; sleep 2; continue; }
+                php artisan down
+                curl -L https://github.com/Nookure/NookTheme/releases/latest/download/panel.tar.gz | tar -xzv
+                chmod -R 755 storage/* bootstrap/cache
+                composer install --no-dev --optimize-autoloader
+                php artisan view:clear
+                php artisan config:clear
+                php artisan migrate --seed --force
+                chown -R www-data:www-data /var/www/pterodactyl/*
+                php artisan queue:restart
+                php artisan up
+
+                cd
+                read -p "Nook Theme installed. Press Enter..."
+                ;;
+            0)
+                break
+                ;;
+            *)
+                echo -e "${RED}Invalid option!${NC}"
+                sleep 1.5
+                ;;
+        esac
+    done
+    ;;
 
         0)
             exit 0
