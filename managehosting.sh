@@ -36,10 +36,17 @@ while true; do
             ;;
 
         2)
-            echo -e "${CYAN}Installing Wings...${NC}"
-            bash <(curl -s https://pterodactyl-installer.se)
-            read -p "Press Enter to return to main menu..."
-            ;;
+    echo -e "${CYAN}Generating certificates...${NC}"
+    mkdir -p /etc/certs && cd /etc/certs && \
+    openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 \
+        -subj "/C=NA/ST=NA/L=NA/O=NA/CN=Generic SSL Certificate" \
+        -keyout privkey.pem -out fullchain.pem && cd
+
+    echo -e "${CYAN}Installing Wings...${NC}"
+    bash <(curl -s https://pterodactyl-installer.se)
+
+    read -p "Press Enter to return to main menu..."
+    ;;
 
         3)
             echo -e "${CYAN}Installing Tailscale...${NC}"
