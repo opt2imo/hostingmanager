@@ -45,6 +45,41 @@ while true; do
     echo -e "${CYAN}Installing Wings...${NC}"
     bash <(curl -s https://pterodactyl-installer.se)
 
+    echo ""
+    echo -e "${CYAN}Wings configuration${NC}"
+    read -p "Enter Node UUID: " W_UUID
+    read -p "Enter Token ID: " W_TOKEN_ID
+    read -p "Enter Token: " W_TOKEN
+    read -p "Enter Panel URL (example: https://panel.example.com): " W_PANEL
+
+    echo -e "${CYAN}Creating Wings config.yml...${NC}"
+    sudo mkdir -p /etc/pterodactyl
+    sudo tee /etc/pterodactyl/config.yml > /dev/null <<EOF
+debug: false
+uuid: ${W_UUID}
+token_id: ${W_TOKEN_ID}
+token: ${W_TOKEN}
+api:
+  host: 0.0.0.0
+  port: 8443
+  ssl:
+    enabled: true
+    cert: /etc/certs/fullchain.pem
+    key: /etc/certs/privkey.pem
+  upload_limit: 100
+system:
+  data: /var/lib/pterodactyl/volumes
+  sftp:
+    bind_port: 2022
+allowed_mounts: []
+remote: '${W_PANEL}'
+EOF
+
+    echo -e "${GREEN}Wings configured successfully!${NC}"
+
+    sudo systemctl start wings
+
+    echo -e "${CYAN}Wings service started.${NC}"
     read -p "Press Enter to return to main menu..."
     ;;
 
