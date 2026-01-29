@@ -35,7 +35,7 @@ cat << "EOF"
 EOF
 echo -e "${RESET}"
 
-echo -e "${GREEN}AUTO BLUEPRINT INSTALLER — Optimized Version${RESET}"
+echo -e "${GREEN}AUTO BLUEPRINT INSTALLER — Optimized Version (This Script Is Inspired By HopingBoyz)${RESET}"
 echo
 
 #============ LOGGING ============#
