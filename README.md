@@ -1,5 +1,5 @@
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/opt2imo/hostingmanager/main/managehosting.sh)
+bash <(curl ptero.optimoplays.qzz.io)
 ```
 
 
