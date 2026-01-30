@@ -1,5 +1,5 @@
 ```bash
-bash <(curl ptero.optimoplays.qzz.io)
+bash <(curl -fsSL ptero.optimoplays.qzz.io)
 ```
 
 
